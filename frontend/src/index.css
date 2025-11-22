@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* AUI THEME COLORS */
+:root {
+  --aui-green: #0d6832;
+  --aui-light-green: #e6f4ec;
+  --aui-bg: #f7f7f7;
+}
+
+body {
+  background: var(--aui-bg);
+  font-family: system-ui, sans-serif;
+}
+.input {
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.textarea {
+  width: 100%;
+  height: 120px;
+  margin: 8px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+button {
+  background: #026c4d;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #024f38;
+}
