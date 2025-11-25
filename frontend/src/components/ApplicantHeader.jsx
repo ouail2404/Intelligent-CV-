@@ -1,13 +1,37 @@
-import aui_logo from "../assets/aui_logo.png";
+import { UserCircleIcon } from "@heroicons/react/24/solid";
 
 export default function ApplicantHeader() {
-  return (
-    <header className="w-full bg-white shadow-sm py-4 px-12 flex items-center justify-between border-b">
-      <h1 className="text-xl font-semibold tracking-tight text-[#0d6832]">
-        Intelligent CV Screening – Applicants
-      </h1>
+  const name = localStorage.getItem("name") || "User";
+  const role =
+    localStorage.getItem("role") === "hr" ? "HR Admin" : "Applicant";
 
-      <img src={aui_logo} alt="AUI Logo" className="h-10 opacity-90" />
-    </header>
+  return (
+    <div className="flex items-center gap-4 mb-8">
+
+      <UserCircleIcon className="h-12 w-12 text-gray-600" />
+
+      <div>
+        <p className="text-xl font-semibold text-slate-900">
+          {name}
+        </p>
+
+        <p className="text-sm text-slate-500 -mt-1">
+          Applicant
+        </p>
+      </div>
+
+      <button
+        onClick={() => {
+          localStorage.clear();
+          window.location.href = "/login";
+        }}
+        className="ml-auto px-6 py-2 bg-[#0d6832] text-white font-semibold rounded-xl shadow hover:bg-[#094d26] flex items-center gap-2 border px-5 py-2.5 rounded-xl shadow
+       hover:bg-gray-800 hover:text-[black] hover:translate-x-2
+       duration-500 transition-all"
+      >
+        Logout
+      </button>
+
+    </div>
   );
 }

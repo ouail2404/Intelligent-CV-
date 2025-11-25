@@ -11,7 +11,7 @@ SECRET = "supersecretkey123"
 
 app = Flask(__name__)
 
-# FIXED CORS
+# CORS
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 from matcher import (
@@ -25,6 +25,7 @@ from db import db
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
 app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024
+
 
 # ---------------------------------------
 # AUTH ROUTES
@@ -59,10 +60,7 @@ def login():
     password = data.get("password")
 
     user = db.users.find_one({"email": email})
-    if not user:
-        return jsonify({"error": "Invalid credentials"}), 400
-
-    if not bcrypt.checkpw(password.encode(), user["password"]):
+    if not user or not bcrypt.checkpw(password.encode(), user["password"]):
         return jsonify({"error": "Invalid credentials"}), 400
 
     token = jwt.encode({
@@ -73,19 +71,26 @@ def login():
 
     return jsonify({
         "token": token,
-        "role": user["role"]
+        "role": user["role"],
+        "name": user["name"],
+        "email": user["email"],
+        "user_id": str(user["_id"])
     }), 200
 
+
 # ---------------------------------------
-# HEALTH CHECK
+# HEALTH
 # ---------------------------------------
 @app.route("/api/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"}), 200
 
+
 # ---------------------------------------
-# HR MATCHING (JSON + FILES)
+# MATCH (HR + Applicant)
 # ---------------------------------------
+@app.route("/api/match", methods=["POST"])
+@app.route("/api/match", methods=["POST"])
 @app.route("/api/match", methods=["POST"])
 def match_from_text():
     data = request.get_json(silent=True)
@@ -97,48 +102,73 @@ def match_from_text():
 
     if not jd_text:
         return jsonify({"error": "job_description is required"}), 400
-
     if not cvs:
         return jsonify({"error": "At least one CV is required"}), 400
 
-    try:
-        results = compute_matches_from_text(jd_text, cvs)
-        return jsonify({"results": results}), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/api/match_files", methods=["POST"])
-def match_from_files():
-    jd_text = (request.form.get("job_description") or "").strip()
-    if not jd_text:
-        return jsonify({"error": "job_description is required"}), 400
-
-    files = request.files.getlist("files")
-    if not files:
-        return jsonify({"error": "No files uploaded"}), 400
-
-    cvs = []
-    for f in files:
-        if not allowed_file(f.filename):
-            continue
-
-        filename = secure_filename(f.filename)
-        path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        f.save(path)
-
-        text = extract_text(path)
-        if text:
-            cvs.append({"name": filename, "text": text})
-
-    if not cvs:
-        return jsonify({"error": "Could not extract any CV text"}), 400
-
     results = compute_matches_from_text(jd_text, cvs)
+
+    # inject applicant details + skill info
+    for i, cv in enumerate(cvs):
+        results[i]["applicant_name"] = cv.get("applicant_name", "")
+        results[i]["applicant_email"] = cv.get("applicant_email", "")
+        
+        # ensure skill arrays exist, even if empty
+        results[i]["matched_skills"] = results[i].get("matched_skills", [])
+        results[i]["missing_must"] = results[i].get("missing_must", [])
+        results[i]["missing_nice"] = results[i].get("missing_nice", [])
+        results[i]["suggestions"] = results[i].get("suggestions", [])
+
     return jsonify({"results": results}), 200
 
+
+    # Attach metadata
+    for i, cv in enumerate(cvs):
+        results[i]["applicant_name"] = cv.get("applicant_name", "")
+        results[i]["applicant_email"] = cv.get("applicant_email", "")
+        results[i]["matched_skills"] = cv.get("matched_skills", [])
+        results[i]["missing_must_have"] = cv.get("missing_must_have", [])
+        results[i]["missing_nice_have"] = cv.get("missing_nice_have", [])
+
+    return jsonify({"results": results}), 200
+
+
 # ---------------------------------------
-# JOB CREATION / LISTING
+# MATCH SINGLE (Applicant "Check Fit")
+# ---------------------------------------
+@app.route("/api/match_single", methods=["POST"])
+def match_single():
+    job_id = request.form.get("job_id")
+    file = request.files.get("cv")
+
+    if not job_id:
+        return jsonify({"error": "job_id is required"}), 400
+    if not file:
+        return jsonify({"error": "CV file is required"}), 400
+
+    try:
+        job = db.jobs.find_one({"_id": ObjectId(job_id)})
+    except:
+        return jsonify({"error": "Invalid job_id"}), 400
+
+    if not job:
+        return jsonify({"error": "Job not found"}), 404
+
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+    file.save(filepath)
+
+    text = extract_text(filepath)
+    if not text:
+        return jsonify({"error": "Could not extract text"}), 400
+
+    cvs = [{"name": filename, "text": text}]
+    results = compute_matches_from_text(job["description"], cvs)
+
+    return jsonify({"match_result": results[0]}), 200
+
+
+# ---------------------------------------
+# JOBS
 # ---------------------------------------
 @app.route("/api/jobs/create", methods=["POST"])
 def create_job():
@@ -174,51 +204,59 @@ def get_job(job_id):
         return jsonify(job), 200
     except:
         return jsonify({"error": "Invalid job id"}), 400
+    
 
-# ---------------------------------------
-# APPLICANT: MATCH SINGLE CV (CHECK FIT)
-# ---------------------------------------
-@app.route("/api/match_single", methods=["POST"])
-def match_single():
-    job_id = request.form.get("job_id")
-    file = request.files.get("cv")
 
-    if not job_id:
-        return jsonify({"error": "job_id is required"}), 400
-    if not file:
-        return jsonify({"error": "CV file is required"}), 400
+@app.route("/api/jobs/update/<job_id>", methods=["PUT"])
+def update_job(job_id):
+    data = request.get_json()
+    title = data.get("title")
+    description = data.get("description")
 
-    # Get job description
     try:
         job = db.jobs.find_one({"_id": ObjectId(job_id)})
+        if not job:
+            return jsonify({"error": "Job not found"}), 404
     except:
-        return jsonify({"error": "Invalid job_id"}), 400
+        return jsonify({"error": "Invalid job ID"}), 400
 
-    if not job:
-        return jsonify({"error": "Job not found"}), 404
+    update_data = {}
+    if title:
+        update_data["title"] = title
+    if description:
+        update_data["description"] = description
 
-    # Save CV file
-    filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    file.save(filepath)
+    db.jobs.update_one({"_id": ObjectId(job_id)}, {"$set": update_data})
 
-    # Extract CV text
-    text = extract_text(filepath)
-    if not text:
-        return jsonify({"error": "Could not extract text"}), 400
+    return jsonify({"message": "Job updated"}), 200
 
-    cvs = [{"name": filename, "text": text}]
-    results = compute_matches_from_text(job["description"], cvs)
+@app.route("/api/jobs/delete/<job_id>", methods=["DELETE"])
+def delete_job(job_id):
+    try:
+        result = db.jobs.delete_one({"_id": ObjectId(job_id)})
+        if result.deleted_count == 0:
+            return jsonify({"error": "Job not found"}), 404
 
-    return jsonify({"match_result": results[0]}), 200
+        # Also delete applicant submissions for this job
+        db.applications.delete_many({"job_id": job_id})
+
+        return jsonify({"message": "Job deleted"}), 200
+
+    except:
+        return jsonify({"error": "Invalid job ID"}), 400
+
 
 # ---------------------------------------
-# APPLICANT: SUBMIT APPLICATION
+# APPLY
 # ---------------------------------------
 @app.route("/api/applications/submit", methods=["POST"])
 def submit_application():
     job_id = request.form.get("job_id")
     file = request.files.get("cv")
+
+    applicant_name = request.form.get("applicant_name")
+    applicant_email = request.form.get("applicant_email")
+    applicant_id = request.form.get("applicant_id")
 
     if not job_id or not file:
         return jsonify({"error": "job_id and cv required"}), 400
@@ -238,41 +276,55 @@ def submit_application():
         "filename": filename,
         "filepath": path,
         "cv_text": text,
-        "submitted_at": datetime.utcnow()
+        "submitted_at": datetime.utcnow(),
+        "applicant_name": applicant_name,
+        "applicant_email": applicant_email,
+        "applicant_id": applicant_id
     })
 
     return jsonify({"message": "Application submitted"}), 201
 
+
 # ---------------------------------------
-# HR: VIEW ALL APPLICANTS
+# GET APPLICANTS
 # ---------------------------------------
 @app.route("/api/applications/job/<job_id>", methods=["GET"])
 def get_applicants_for_job(job_id):
-    apps = list(db.applications.find({"job_id": job_id}, {"cv_text": 0}))
+    apps = list(db.applications.find({"job_id": job_id}))
     for a in apps:
         a["_id"] = str(a["_id"])
     return jsonify({"applicants": apps}), 200
 
+
 # ---------------------------------------
-# HR: MATCH ALL APPLICANTS
+# RECENT APPLICANTS
 # ---------------------------------------
-@app.route("/api/applications/match/<job_id>", methods=["GET"])
-def match_applicants(job_id):
-    job = db.jobs.find_one({"_id": ObjectId(job_id)})
-    if not job:
-        return jsonify({"error": "Job not found"}), 404
+@app.route("/api/applications/recent", methods=["GET"])
+def recent_applications():
+    recent = list(db.applications.find().sort("submitted_at", -1).limit(10))
 
-    apps = list(db.applications.find({"job_id": job_id}))
-    cvs = [{
-        "id": str(a["_id"]),
-        "name": a["filename"],
-        "text": a.get("cv_text", "")
-    } for a in apps]
+    response = []
+    for app_doc in recent:
+        job = db.jobs.find_one({"_id": ObjectId(app_doc["job_id"])})
 
-    results = compute_matches_from_text(job["description"], cvs)
-    results = sorted(results, key=lambda x: x.get("score", 0), reverse=True)
+        match_score = None
+        try:
+            cvs = [{"name": app_doc["filename"], "text": app_doc.get("cv_text", "")}]
+            results = compute_matches_from_text(job["description"], cvs)
+            match_score = results[0].get("score")
+        except:
+            pass
 
-    return jsonify({"results": results}), 200
+        response.append({
+            "_id": str(app_doc["_id"]),
+            "applicant_name": app_doc.get("applicant_name", ""),
+            "applicant_email": app_doc.get("applicant_email", ""),
+            "submitted_at": app_doc.get("submitted_at"),
+            "job_title": job.get("title", "Unknown Job") if job else "Unknown Job",
+            "match_score": match_score
+        })
+
+    return jsonify({"recent": response}), 200
 
 
 # ---------------------------------------
@@ -281,6 +333,7 @@ def match_applicants(job_id):
 @app.route("/uploads/<path:filename>")
 def download_file(filename):
     return send_from_directory(UPLOAD_DIR, filename, as_attachment=True)
+
 
 # ---------------------------------------
 # RUN SERVER

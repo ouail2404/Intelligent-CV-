@@ -11,6 +11,8 @@ import ApplicantLayout from "./components/ApplicantLayout.jsx";
 import JobList from "./pages/Applicant/JobList.jsx";
 import JobDetails from "./pages/Applicant/JobDetails.jsx";
 import MatchResult from "./pages/Applicant/MatchResult.jsx";
+import MyApplications from "./components/Myapplications.jsx";
+
 
 // Auth
 import Login from "./auth/Login.jsx";
@@ -45,8 +47,10 @@ function Main() {
         <Route path="/applicant" element={<ApplicantLayout />}>
           <Route index element={<JobList />} />
           <Route path="job/:id" element={<JobDetails />} />
+          
           <Route path="match/:id" element={<MatchResult />} />
         </Route>
+<Route path="/applications" element={<MyApplications />} />
 
       </Routes>
     </BrowserRouter>

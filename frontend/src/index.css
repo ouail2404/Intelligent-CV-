@@ -43,3 +43,51 @@ button {
 button:hover {
   background: #024f38;
 }
+
+/* 🌌 AUI Aurora Background */
+.aurora-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, #0d6832, transparent 60%),
+              radial-gradient(circle at 80% 80%, #0a4e28, transparent 60%);
+  filter: blur(80px);
+  opacity: 0.7;
+  animation: auroraMove 12s infinite alternate ease-in-out;
+}
+
+/* Extra moving light */
+.aurora-layer {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 90deg, rgba(0, 255, 180, 0.3), transparent);
+  opacity: 0.4;
+  filter: blur(100px);
+  animation: auroraRotate 18s infinite linear;
+}
+
+@keyframes auroraMove {
+  0% {
+    transform: translate(-20px, -20px) scale(1);
+  }
+  100% {
+    transform: translate(20px, 20px) scale(1.15);
+  }
+}
+
+@keyframes auroraRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- PREMIUM DASHBOARD BACKGROUND (OPTION 2) --- */
+
+/* Light geometric grid + subtle noise overlay */
+/* --- ORIGINAL PREMIUM DASHBOARD BACKGROUND (RESTORED) --- */
+body {
+  background: radial-gradient(circle at 20% 30%, #dff3e8, #e8f7f0 40%, #f4fbf8 80%);
+}
+

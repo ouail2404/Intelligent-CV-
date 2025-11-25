@@ -14,9 +14,6 @@ export default function JobDetails() {
       .then(data => setJob(data));
   }, [id]);
 
-  // ---------------------------------------
-  // 1️⃣ CHECK MATCH / FIT
-  // ---------------------------------------
   const checkMatch = () => {
     const input = document.createElement("input");
     input.type = "file";
@@ -24,8 +21,8 @@ export default function JobDetails() {
 
     input.onchange = async e => {
       const file = e.target.files[0];
-      const form = new FormData();
 
+      const form = new FormData();
       form.append("job_id", id);
       form.append("cv", file);
 
@@ -38,45 +35,44 @@ export default function JobDetails() {
 
       if (!res.ok) return alert(data.error);
 
-      // Save match result locally
       localStorage.setItem("match_result", JSON.stringify(data.match_result));
-
-      // Navigate to match results page
       navigate(`/applicant/match/${id}`);
     };
 
     input.click();
   };
 
-  // ---------------------------------------
-  // 2️⃣ SUBMIT FINAL APPLICATION
-  // ---------------------------------------
   const submitApplication = () => {
+    const name = localStorage.getItem("name");
+    const email = localStorage.getItem("email");
+    const userId = localStorage.getItem("user_id");
+    const token = localStorage.getItem("token");
+
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".pdf,.docx,.txt";
 
     input.onchange = async e => {
       const file = e.target.files[0];
-      const form = new FormData();
 
+      const form = new FormData();
       form.append("job_id", id);
       form.append("cv", file);
 
-      // Optional – if you have auth:
-      form.append("applicant_name", "Anonymous User");
-      form.append("applicant_email", "no-email@unknown.com");
+      form.append("applicant_name", name);
+      form.append("applicant_email", email);
+      form.append("applicant_id", userId);
 
       const res = await fetch(`${API}/applications/submit`, {
         method: "POST",
+        headers: { Authorization: token },
         body: form,
       });
 
       const data = await res.json();
-
       if (!res.ok) return alert(data.error);
 
-      alert("🎉 Your application was submitted successfully!");
+      alert("🎉 Application submitted!");
     };
 
     input.click();
@@ -86,32 +82,24 @@ export default function JobDetails() {
 
   return (
     <div className="bg-white p-10 border border-gray-200 rounded-xl shadow-sm">
-      <h1 className="text-2xl font-semibold text-[#0d6832]">
-        {job.title}
-      </h1>
+      <h1 className="text-2xl font-semibold text-[#0d6832]">{job.title}</h1>
 
-      <p className="mt-4 text-slate-700 text-sm leading-relaxed">
-        {job.description}
-      </p>
+      <p className="mt-4 text-slate-700">{job.description}</p>
 
       <div className="flex gap-4 mt-8">
-
-        {/* 1️⃣ CHECK MATCH BUTTON */}
         <button
           onClick={checkMatch}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg font-semibold transition shadow-sm"
+          className="bg-blue-600 text-white px-5 py-3 rounded-lg"
         >
-          Check Fit / Match CV
+          Check Fit
         </button>
 
-        {/* 2️⃣ SUBMIT APPLICATION BUTTON */}
         <button
           onClick={submitApplication}
-          className="bg-green-700 hover:bg-green-800 text-white px-5 py-3 rounded-lg font-semibold transition shadow-sm"
+          className="bg-green-700 text-white px-5 py-3 rounded-lg"
         >
           Submit Application
         </button>
-
       </div>
     </div>
   );
