@@ -13,12 +13,12 @@ export default function Signup({ onSignup }) {
 
   const videoRef = useRef(null);
 
-  // -------------------- VIDEO TRIMMING LOGIC --------------------
+ 
   useEffect(() => {
     const vid = videoRef.current;
     if (!vid) return;
 
-    // Start the video at 30 seconds
+    
     const startAt = 31;
     const cutBeforeEnd = 7;
 
@@ -36,7 +36,7 @@ export default function Signup({ onSignup }) {
     return () => vid.removeEventListener("timeupdate", handleTimeUpdate);
   }, []);
 
-  // ---------------- SIGNUP LOGIC ----------------
+  // SIGNUP 
   const handleSignup = async () => {
     setError("");
 
@@ -68,7 +68,7 @@ export default function Signup({ onSignup }) {
         className="absolute inset-0 w-full h-full object-cover"
       />
 
-      {/* Slight dark overlay (much lighter than before) */}
+      
       <div className="absolute inset-0 bg-black/20" />
 
       {/* SIGNUP CARD */}

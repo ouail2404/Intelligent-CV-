@@ -27,9 +27,9 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
 app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024
 
 
-# ---------------------------------------
+
 # AUTH ROUTES
-# ---------------------------------------
+
 @app.route("/api/auth/signup", methods=["POST"])
 def signup():
     data = request.json
@@ -78,17 +78,16 @@ def login():
     }), 200
 
 
-# ---------------------------------------
+
 # HEALTH
-# ---------------------------------------
+
 @app.route("/api/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"}), 200
 
 
-# ---------------------------------------
 # MATCH (HR + Applicant)
-# ---------------------------------------
+
 @app.route("/api/match", methods=["POST"])
 @app.route("/api/match", methods=["POST"])
 @app.route("/api/match", methods=["POST"])
@@ -132,9 +131,9 @@ def match_from_text():
     return jsonify({"results": results}), 200
 
 
-# ---------------------------------------
+
 # MATCH SINGLE (Applicant "Check Fit")
-# ---------------------------------------
+
 @app.route("/api/match_single", methods=["POST"])
 def match_single():
     job_id = request.form.get("job_id")
@@ -167,9 +166,9 @@ def match_single():
     return jsonify({"match_result": results[0]}), 200
 
 
-# ---------------------------------------
+
 # JOBS
-# ---------------------------------------
+
 @app.route("/api/jobs/create", methods=["POST"])
 def create_job():
     data = request.get_json()
@@ -237,7 +236,7 @@ def delete_job(job_id):
         if result.deleted_count == 0:
             return jsonify({"error": "Job not found"}), 404
 
-        # Also delete applicant submissions for this job
+        
         db.applications.delete_many({"job_id": job_id})
 
         return jsonify({"message": "Job deleted"}), 200
@@ -246,9 +245,9 @@ def delete_job(job_id):
         return jsonify({"error": "Invalid job ID"}), 400
 
 
-# ---------------------------------------
+
 # APPLY
-# ---------------------------------------
+
 @app.route("/api/applications/submit", methods=["POST"])
 def submit_application():
     job_id = request.form.get("job_id")
@@ -285,9 +284,9 @@ def submit_application():
     return jsonify({"message": "Application submitted"}), 201
 
 
-# ---------------------------------------
+
 # GET APPLICANTS
-# ---------------------------------------
+
 @app.route("/api/applications/job/<job_id>", methods=["GET"])
 def get_applicants_for_job(job_id):
     apps = list(db.applications.find({"job_id": job_id}))
@@ -296,9 +295,9 @@ def get_applicants_for_job(job_id):
     return jsonify({"applicants": apps}), 200
 
 
-# ---------------------------------------
+
 # RECENT APPLICANTS
-# ---------------------------------------
+
 @app.route("/api/applications/recent", methods=["GET"])
 def recent_applications():
     recent = list(db.applications.find().sort("submitted_at", -1).limit(10))
@@ -327,17 +326,17 @@ def recent_applications():
     return jsonify({"recent": response}), 200
 
 
-# ---------------------------------------
+
 # DOWNLOAD FILE
-# ---------------------------------------
+
 @app.route("/uploads/<path:filename>")
 def download_file(filename):
     return send_from_directory(UPLOAD_DIR, filename, as_attachment=True)
 
 
-# ---------------------------------------
+
 # RUN SERVER
-# ---------------------------------------
+
 if __name__ == "__main__":
     print("🔥 Backend running on http://127.0.0.1:5000")
     app.run(host="127.0.0.1", port=5000, debug=True)

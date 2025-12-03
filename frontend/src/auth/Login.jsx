@@ -10,10 +10,10 @@ export default function Login({ onLogin }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const VIDEO_START = 19; // start after 10 seconds
-  const VIDEO_END_OFFSET = 7; // stop 5 seconds before end
+  const VIDEO_START = 19; 
+  const VIDEO_END_OFFSET = 7; 
 
-  // ---------------- LOGIN LOGIC (UNCHANGED) ----------------
+  // LOGIN 
   const handleLogin = async () => {
     setError("");
 
@@ -41,7 +41,7 @@ localStorage.setItem("user_id", data.user_id);
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
 
-      {/* --- VIDEO BACKGROUND WITH TRIMMED RANGE --- */}
+      {/* VIDEO BACKGROUND WITH TRIMMED RANGE */}
       <video
         autoPlay
         muted
@@ -53,7 +53,7 @@ localStorage.setItem("user_id", data.user_id);
           const duration = video.duration;
           video.currentTime = VIDEO_START;
 
-          // custom loop inside trimmed range
+          
           video.addEventListener("timeupdate", () => {
             if (video.currentTime >= duration - VIDEO_END_OFFSET) {
               video.currentTime = VIDEO_START;
@@ -64,10 +64,10 @@ localStorage.setItem("user_id", data.user_id);
         <source src={bgVideo} type="video/mp4" />
       </video>
 
-      {/* Dark blur overlay */}
+      
       <div className="absolute inset-0 bg-black/5 " />
 
-      {/* --- LOGIN CARD --- */}
+      {/* LOGIN CARD */}
       <motion.div
         initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}

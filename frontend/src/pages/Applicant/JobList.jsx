@@ -9,16 +9,16 @@ export default function JobList() {
   const [search, setSearch] = useState("");
 
 
-  const userEmail = localStorage.getItem("email");   // ✅ IMPORTANT
+  const userEmail = localStorage.getItem("email");   
 
-  // -------------------- FETCH JOBS --------------------
+  //  FETCH JOBS 
   useEffect(() => {
     fetch(`${API}/jobs/list`)
       .then((res) => res.json())
       .then((data) => setJobs(data.filter((j) => j.title)));
   }, []);
 
-  // -------------------- FETCH SAVED JOBS --------------------
+  // FETCH SAVED JOBS 
   useEffect(() => {
     if (!userEmail) return;
 
@@ -27,12 +27,12 @@ export default function JobList() {
       .then((data) => setSavedJobs(data.savedIds || []));
   }, [userEmail]);
 
-  // -------------------- SEARCH FILTER --------------------
+  // SEARCH FILTER 
   const filtered = jobs.filter((j) =>
     j.title.toLowerCase().includes(search.toLowerCase())
   );
 
-  // -------------------- SAVE / UNSAVE --------------------
+  //  SAVE / UNSAVE
   function toggleSave(job) {
     const isSaved = savedJobs.includes(job._id);
 
@@ -63,10 +63,10 @@ export default function JobList() {
     }
   }
 
-  // -------------------- UI --------------------
+
   return (
     <div className="px-4">
-      {/* TITLE */}
+      
       <h1 className="text-4xl font-extrabold text-[#0d6832] text-center mb-3">
         Available Positions
       </h1>
@@ -97,7 +97,7 @@ export default function JobList() {
             key={job._id}
             className="bg-white p-6 rounded-2xl border shadow-sm hover:shadow-lg transition"
           >
-            {/* TOP ROW */}
+            
             <div className="flex justify-between items-start mb-3">
               <span className="text-green-700 bg-green-100 px-3 py-1 rounded-full text-xs">
                 Full-time
@@ -106,15 +106,15 @@ export default function JobList() {
               
             </div>
 
-            {/* TITLE */}
+            
             <h2 className="text-xl font-bold text-[#0d6832]">{job.title}</h2>
 
-            {/* DESCRIPTION */}
+            
             <p className="text-slate-600 text-sm mt-2 line-clamp-3">
               {job.description.slice(0, 150)}...
             </p>
 
-            {/* TAGS */}
+            
             <div className="flex flex-wrap gap-2 mt-4">
               {job.description
                 .split(" ")
@@ -130,7 +130,7 @@ export default function JobList() {
                 ))}
             </div>
 
-            {/* VIEW BUTTON */}
+            
             <Link
               to={`job/${job._id}`}
               className="block w-full text-center mt-6 bg-[#0d6832] text-white py-2.5 rounded-xl font-semibold hover:bg-[#094d26] transition"

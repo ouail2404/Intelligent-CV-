@@ -1,6 +1,10 @@
 import React from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function MatchResult() {
+  const { id } = useParams();            //  GET job id
+  const navigate = useNavigate();        
+
   const saved = localStorage.getItem("match_result");
   if (!saved) return <div>No result.</div>;
 
@@ -15,6 +19,15 @@ export default function MatchResult() {
 
   return (
     <div className="bg-white p-10 border border-gray-200 rounded-xl shadow-sm max-w-4xl">
+      
+      
+      <button
+        onClick={() => navigate(`/applicant/job/${id}`)}
+        className="text-black hover:text-[#0d6832] transition flex items-center gap-2 mb-5"
+      >
+        ← Back to Job
+      </button>
+
       <h1 className="text-2xl font-semibold text-[#0d6832] mb-6">
         Match Result
       </h1>

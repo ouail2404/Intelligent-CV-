@@ -44,7 +44,7 @@ export default function MyApplications() {
   return (
     <div className="flex w-full">
 
-      {/* ---------------- SIDEBAR ---------------- */}
+      {/*SIDEBAR*/}
       <aside className="w-64 bg-white border-r shadow-lg p-6 flex flex-col">
         <img src={aui_logo} alt="AUI" className="h-20 mx-auto mb-8 opacity-90" />
         
@@ -70,7 +70,7 @@ export default function MyApplications() {
         </nav>
       </aside>
 
-      {/* ---------------- MAIN CONTENT ---------------- */}
+      {/* MAIN CONTENT */}
       <main className="flex-1 px-10 py-10 bg-[#f5f7fa]">
         <ApplicantHeader />
 
@@ -82,7 +82,7 @@ export default function MyApplications() {
           Track and manage your submitted job applications.
         </p>
 
-        {/* ---------- SEARCH BAR ---------- */}
+        {/*SEARCH BAR */}
         <div className="flex justify-center mb-10">
           <input
             type="text"
@@ -93,7 +93,7 @@ export default function MyApplications() {
           />
         </div>
 
-        {/* ---------- Stats Cards ---------- */}
+        {/*Stats Cards */}
         <div className="grid grid-cols-2 gap-6 mt-10 mb-12">
           <div className="bg-white p-6 rounded-2xl shadow border">
             <p className="text-sm text-slate-600">Total Applications</p>
@@ -110,7 +110,7 @@ export default function MyApplications() {
           </div>
         </div>
 
-        {/* ---------- Applications Grid (3 columns) ---------- */}
+        {/*Applications Grid */}
         <div className="grid md:grid-cols-3 gap-8">
           {filteredApps.length === 0 && (
             <p className="text-slate-600 text-lg">

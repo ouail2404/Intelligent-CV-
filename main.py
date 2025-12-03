@@ -1,5 +1,4 @@
-# main.py — JD-first CV matcher with MUST/NICE coverage, old UI, strict reveal
-# Run: python main.py  -> http://127.0.0.1:5000/
+
 
 import os
 import re
@@ -12,25 +11,25 @@ import numpy as np
 import PyPDF2
 import docx2txt
 
-# Optional spaCy (nice tokenization but not required)
+
 try:
     import spacy
     nlp = spacy.load("en_core_web_sm")
 except Exception:
     nlp = None
 
-# ----------------
+
 # Config
-# ----------------
+
 UPLOAD_DIR = "uploads"
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
 MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 sbert_model = SentenceTransformer(MODEL_NAME)
 
-# ----------------
+
 # Catalog (expanded so NICE TO HAVE lines are fully picked up)
-# ----------------
+
 SKILL_CATALOG = {
   "frontend": [
     "HTML","CSS","JavaScript","TypeScript",
@@ -82,9 +81,9 @@ ALIASES = {
   "service worker":"service workers"
 }
 
-# ----------------
+
 # Regex helpers
-# ----------------
+
 EXPERIENCE_RE = re.compile(r"(\d+)\s*(\+)?\s*(years?|yrs?)", re.IGNORECASE)
 RANGE_RE = re.compile(r"(?P<start>(19|20)\d{2})\s*[-–to]+\s*(?P<end>(19|20)\d{2}|present|current|now)", re.IGNORECASE)
 
@@ -102,9 +101,9 @@ HEADER_RE = re.compile(
 )
 BULLET_LINE = re.compile(r"^\s*(?:[-*•]+|\d+\.)\s+(.*)$")
 
-# ----------------
+
 # IO helpers
-# ----------------
+
 def allowed_file(filename: str) -> bool:
     low = filename.lower()
     return any(low.endswith(ext) for ext in ALLOWED_EXTENSIONS)
@@ -128,9 +127,9 @@ def extract_text(path: str) -> str:
 def normalize_text(t: str) -> str:
     return re.sub(r"\s+", " ", t or "").strip()
 
-# ----------------
+
 # NLP helpers
-# ----------------
+
 def tokenize(text: str) -> Set[str]:
     if not text:
         return set()
@@ -139,7 +138,7 @@ def tokenize(text: str) -> Set[str]:
     return set(re.findall(r"[a-zA-Z0-9+.#/_;| -]+", text.lower()))
 
 def apply_aliases_to_tokens(tokens: Set[str]) -> Set[str]:
-    # Expand slash/semicolon/pipe combos: "i18n/l10n", "Material UI/Chakra UI"
+    # Expand slash/semicolon:
     mapped = set(tokens)
     extra = set()
     for t in list(mapped):
@@ -222,9 +221,9 @@ def embed(texts: List[str]) -> np.ndarray:
 def cosine_sim(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(a, b))
 
-# ----------------
-# JD parsing (MUST/NICE)
-# ----------------
+
+# JD parsing 
+
 def _section_kind(header_text: str) -> str:
     ht = header_text.lower()
     for p in MUST_HEADERS:
@@ -247,7 +246,6 @@ def parse_jd_sections_full(jd: str) -> Dict[str, str]:
             mode = _section_kind(m.group("h"))
             continue
         if mode not in {"must","nice"}:
-            # Also capture inline comma/semicolon lists under the same stanza
             continue
         b = BULLET_LINE.match(line)
         captured = b.group(1) if b else line
@@ -266,11 +264,9 @@ def jd_profile(jd: str) -> Tuple[Set[str], Set[str], int]:
     nice_sk = detect_skills(nice_raw) if nice_raw else set()
 
     if not must_sk and not nice_sk:
-        # Fallback: detect over whole JD if headers missing
         detected = detect_skills(jd)
         must_sk, nice_sk = detected, set()
 
-    # ensure unique
     nice_sk -= (must_sk & nice_sk)
 
     # Years
@@ -306,9 +302,9 @@ def fit_label(p: float) -> str:
     if p >= 0.50: return "Fair fit"
     return "Developing"
 
-# ----------------
+
 # Flask
-# ----------------
+
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
@@ -368,7 +364,7 @@ def upload():
         missing_nice = sorted(list(nice_sk - cv_sk_set))
         extra = sorted(list(cv_sk_set - req_all))
 
-        # suggestions: MUST first then NICE
+        
         suggestions = (missing_must + missing_nice)[:10]
 
         req_count = len(req_all)

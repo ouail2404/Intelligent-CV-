@@ -44,7 +44,7 @@ button:hover {
   background: #024f38;
 }
 
-/* 🌌 AUI Aurora Background */
+
 .aurora-bg {
   position: absolute;
   inset: 0;
@@ -55,7 +55,7 @@ button:hover {
   animation: auroraMove 12s infinite alternate ease-in-out;
 }
 
-/* Extra moving light */
+
 .aurora-layer {
   position: absolute;
   inset: 0;
@@ -83,11 +83,9 @@ button:hover {
   }
 }
 
-/* --- PREMIUM DASHBOARD BACKGROUND (OPTION 2) --- */
 
-/* Light geometric grid + subtle noise overlay */
-/* --- ORIGINAL PREMIUM DASHBOARD BACKGROUND (RESTORED) --- */
 body {
   background: radial-gradient(circle at 20% 30%, #dff3e8, #e8f7f0 40%, #f4fbf8 80%);
 }
+
 

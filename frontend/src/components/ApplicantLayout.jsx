@@ -42,10 +42,8 @@ export default function ApplicantLayout() {
       
       </aside>
 
-      {/* MAIN CONTENT */}
       <main className="flex-1 px-10 py-10 relative z-10">
 
-    {/* ⭐ Profile Header */}
     <ApplicantHeader />
 
     <div className="mt-6">

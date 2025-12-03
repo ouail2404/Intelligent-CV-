@@ -8,18 +8,18 @@ import numpy as np
 import PyPDF2
 import docx2txt
 
-# ----------------
+
 # Config
-# ----------------
+
 MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 sbert_model = SentenceTransformer(MODEL_NAME)
 
 UPLOAD_DIR = "uploads"
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
-# ----------------
+
 # Skill catalog & aliases
-# ----------------
+
 SKILL_CATALOG = {
     "frontend": [
         "HTML", "CSS", "JavaScript", "TypeScript",
@@ -113,9 +113,9 @@ BULLET_LINE = re.compile(r"^\s*(?:[-*•]+|\d+\.)\s+(.*)$")
 MUST_WEIGHT = 0.70
 
 
-# ----------------
+
 # File helpers
-# ----------------
+
 def allowed_file(filename: str) -> bool:
     low = filename.lower()
     return any(low.endswith(ext) for ext in ALLOWED_EXTENSIONS)
@@ -138,9 +138,9 @@ def extract_text(path: str) -> str:
     return ""
 
 
-# ----------------
+
 # Text helpers
-# ----------------
+
 def normalize_text(t: str) -> str:
     return re.sub(r"\s+", " ", t or "").strip()
 
@@ -152,8 +152,6 @@ def tokenize(text: str) -> Set[str]:
     # Split by any non-alphanumeric
     tokens = re.split(r"[^a-zA-Z0-9+._/#-]+", text.lower())
     return {t for t in tokens if t}
-
-
 
 
 def apply_aliases_to_tokens(tokens: Set[str]) -> Set[str]:
@@ -221,9 +219,9 @@ def cosine_sim(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(a, b))
 
 
-# ----------------
+
 # JD parsing
-# ----------------
+
 def _section_kind(header_text: str) -> str:
     ht = header_text.lower()
     for p in MUST_HEADERS:
@@ -315,9 +313,9 @@ def fit_label(p: float) -> str:
     return "Developing"
 
 
-# ----------------
-# Core scoring (used by APIs)
-# ----------------
+
+# Core scoring 
+
 def compute_matches_from_text(jd_text: str, cvs: List[Dict[str, str]]) -> List[Dict]:
     jd_text = jd_text or ""
     jd_text_norm = normalize_text(jd_text)

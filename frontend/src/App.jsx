@@ -312,7 +312,7 @@ const handleDeleteJob = async (id) => {
           </>
         )}
 
-        {/* SELECT JOB */}
+        
         {activeTab === "select" && (
           <>
             {/* Job selector */}
@@ -340,7 +340,7 @@ const handleDeleteJob = async (id) => {
                   </option>
                 ))}
               </select>
-              {/* Show Edit/Delete ONLY for selected job */}
+              
 {selectedJobId && (
   <div className="bg-white p-6 rounded-xl border shadow-md mt-4">
     <h3 className="text-lg font-semibold text-[#0d6832]">
@@ -361,7 +361,7 @@ const handleDeleteJob = async (id) => {
     </p>
 
     <div className="flex gap-3 mt-4">
-      {/* Edit Button */}
+      
       <button
         className="px-4 py-2 bg-blue-600 text-white rounded-lg"
         onClick={() => {
@@ -375,7 +375,7 @@ const handleDeleteJob = async (id) => {
         Edit
       </button>
 
-      {/* Delete Button */}
+      
       <button
         className="px-4 py-2  text-white rounded-lg"
         onClick={() => handleDeleteJob(selectedJobId)}
@@ -438,7 +438,7 @@ const handleDeleteJob = async (id) => {
               )}
             </div>
 
-            {/* Matching Results */}
+            
             {/* Matching Results */}
 {rankedResults.length > 0 && (
   <div className="bg-white p-8 rounded-2xl shadow-lg mb-10">
@@ -558,9 +558,7 @@ const handleDeleteJob = async (id) => {
   );
 }
 
-/* ============================================================
-   SKILL SECTION COMPONENT — MUST BE OUTSIDE MAIN COMPONENT
-   ============================================================ */
+/* SKILL SECTION */
 function SkillSection({ title, items, color }) {
   return (
     <div className="mb-6">
